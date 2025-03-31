@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+      {
+        "source": "/(.*)",
+        "destination": "/bee-project/index.html"
+      }
+    ]
+  }
