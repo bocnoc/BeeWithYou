@@ -1,0 +1,15 @@
+/* src/styles/App.css */
+.app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #fffde7;
+  }
+  
+  .error {
+    color: red;
+    font-size: 14px;
+    margin: 10px 0;
+  }
