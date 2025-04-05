@@ -19,30 +19,33 @@ function App() {
   const [lastClickTime, setLastClickTime] = useState(null); // Thời gian click cuối cùng
   const [clickMessage, setClickMessage] = useState(''); // Thông báo giới hạn click
   const beeRefs = useRef([]); // Ref để lưu các DOM element của ong
+  const [appError, setAppError] = useState(''); // Thêm state để lưu lỗi ứng dụng
 
   // Kiểm tra trạng thái đăng nhập khi app khởi động
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        setIsLoggedIn(true);
-        // Lấy dữ liệu người dùng từ Firestore
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setBeeCount(data.beeCount || 0);
-          setLastClickTime(data.lastClickTime ? data.lastClickTime.toDate() : null);
-          // Khôi phục danh sách ong để hiển thị
-          setBees(Array.from({ length: data.beeCount || 0 }, (_, i) => ({ id: i })));
+      try {
+        if (user) {
+          setIsLoggedIn(true);
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setBeeCount(data.beeCount || 0);
+            setLastClickTime(data.lastClickTime ? data.lastClickTime.toDate() : null);
+            setBees(Array.from({ length: data.beeCount || 0 }, (_, i) => ({ id: i })));
+          } else {
+            await setDoc(userDocRef, { beeCount: 0, lastClickTime: null });
+          }
         } else {
-          // Nếu người dùng chưa có dữ liệu, tạo mới
-          await setDoc(userDocRef, { beeCount: 0, lastClickTime: null });
+          setIsLoggedIn(false);
+          setBeeCount(0);
+          setBees([]);
+          setLastClickTime(null);
         }
-      } else {
-        setIsLoggedIn(false);
-        setBeeCount(0);
-        setBees([]);
-        setLastClickTime(null);
+      } catch (err) {
+        console.error('Error in auth state change:', err);
+        setAppError('Có lỗi xảy ra khi kết nối với Firebase. Vui lòng thử lại sau.');
       }
     });
     return () => unsubscribe();
@@ -173,6 +176,7 @@ function App() {
 
   return (
     <div className="app">
+      {appError && <p className="error">{appError}</p>} {/* Thêm dòng này để hiển thị lỗi */}
       {!isLoggedIn ? (
         <form onSubmit={handleLogin} className="login-form">
           <h2>Đăng nhập</h2>
