@@ -1,7 +1,7 @@
 // src/hooks/useAuth.js
 import { useState, useEffect } from 'react';
 import { auth, db } from '../firebase/firebase';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'firebase/auth'; // Thêm createUserWithEmailAndPassword
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 export const useAuth = () => {
@@ -55,5 +55,19 @@ export const useAuth = () => {
     }
   };
 
-  return { isLoggedIn, user, error, appError, login, logout };
+  // Thêm hàm register
+  const register = async (email, password) => {
+    setError('');
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('User registered successfully:', userCredential.user);
+      // Document người dùng sẽ được tạo tự động bởi useEffect khi đăng nhập thành công
+    } catch (err) {
+      setError('Đăng ký thất bại. Vui lòng kiểm tra email/mật khẩu.');
+      console.error('Register error:', err);
+      setIsLoggedIn(false);
+    }
+  };
+
+  return { isLoggedIn, user, error, appError, login, logout, register }; // Export thêm hàm register
 };
