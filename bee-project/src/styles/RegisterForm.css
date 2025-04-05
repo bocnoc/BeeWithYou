@@ -1,5 +1,11 @@
 /* src/styles/RegisterForm.css */
-.register-form {
+.register-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .register-form {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -37,6 +43,11 @@
   
   .register-form button:hover {
     background-color: #1e88e5;
+  }
+  
+  .register-form button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
   }
   
   .register-form .error {

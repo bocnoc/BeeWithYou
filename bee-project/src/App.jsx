@@ -8,9 +8,9 @@ import { useBees } from './hooks/useBees';
 import './styles/App.css';
 
 function App() {
-  const { isLoggedIn, user, error, appError, login, logout, register } = useAuth();
-  const { bees, beeCount, clickMessage, addBee, getRemainingTime } = useBees(user);
-  const [showRegister, setShowRegister] = useState(false); // Trạng thái để chuyển đổi giữa đăng nhập và đăng ký
+  const { isLoggedIn, user, error, appError, isLoading: authLoading, login, logout, register } = useAuth();
+  const { bees, beeCount, clickMessage, addBee, getRemainingTime, isLoading: beesLoading } = useBees(user);
+  const [showRegister, setShowRegister] = useState(false);
 
   return (
     <div className="app">
@@ -19,7 +19,7 @@ function App() {
         <div className="auth-container">
           {showRegister ? (
             <>
-              <RegisterForm onRegister={register} error={error} />
+              <RegisterForm onRegister={register} error={error} isLoading={authLoading} />
               <p className="switch-auth">
                 Đã có tài khoản?{' '}
                 <button onClick={() => setShowRegister(false)} className="switch-button">
@@ -29,7 +29,7 @@ function App() {
             </>
           ) : (
             <>
-              <LoginForm onLogin={login} error={error} />
+              <LoginForm onLogin={login} error={error} isLoading={authLoading} />
               <p className="switch-auth">
                 Chưa có tài khoản?{' '}
                 <button onClick={() => setShowRegister(true)} className="switch-button">
@@ -47,6 +47,7 @@ function App() {
           onAddBee={addBee}
           getRemainingTime={getRemainingTime}
           onLogout={logout}
+          isLoading={authLoading || beesLoading} // Kết hợp cả hai loading state
         />
       )}
     </div>

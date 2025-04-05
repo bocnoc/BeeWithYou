@@ -8,22 +8,30 @@ export const useBees = (user) => {
   const [beeCount, setBeeCount] = useState(0);
   const [lastClickTime, setLastClickTime] = useState(null);
   const [clickMessage, setClickMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Thêm loading state
 
   useEffect(() => {
     const fetchData = async () => {
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setBeeCount(data.beeCount || 0);
-          setLastClickTime(data.lastClickTime ? data.lastClickTime.toDate() : null);
-          setBees(Array.from({ length: data.beeCount || 0 }, (_, i) => ({ id: i })));
+      setIsLoading(true); // Bắt đầu loading
+      try {
+        if (user) {
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setBeeCount(data.beeCount || 0);
+            setLastClickTime(data.lastClickTime ? data.lastClickTime.toDate() : null);
+            setBees(Array.from({ length: data.beeCount || 0 }, (_, i) => ({ id: i })));
+          }
+        } else {
+          setBeeCount(0);
+          setBees([]);
+          setLastClickTime(null);
         }
-      } else {
-        setBeeCount(0);
-        setBees([]);
-        setLastClickTime(null);
+      } catch (err) {
+        console.error('Error fetching bee data:', err);
+      } finally {
+        setIsLoading(false); // Kết thúc loading
       }
     };
 
@@ -77,5 +85,5 @@ export const useBees = (user) => {
     }
   };
 
-  return { bees, beeCount, clickMessage, addBee, getRemainingTime };
+  return { bees, beeCount, clickMessage, addBee, getRemainingTime, isLoading }; // Export isLoading
 };
