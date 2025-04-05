@@ -5,7 +5,7 @@ import RegisterForm from './components/RegisterForm';
 import BeeContainer from './components/BeeContainer';
 import { useAuth } from './hooks/useAuth';
 import { useBees } from './hooks/useBees';
-import './styles/App.css';
+import styles from './styles/App.module.css';
 
 function App() {
   const { isLoggedIn, user, error, appError, isLoading: authLoading, login, logout, register } = useAuth();
@@ -13,16 +13,16 @@ function App() {
   const [showRegister, setShowRegister] = useState(false);
 
   return (
-    <div className="app">
-      {appError && <p className="error">{appError}</p>}
+    <div className={styles.app}>
+      {appError && <p className={styles.error}>{appError}</p>}
       {!isLoggedIn ? (
-        <div className="auth-container">
+        <div className={styles.authContainer}>
           {showRegister ? (
             <>
               <RegisterForm onRegister={register} error={error} isLoading={authLoading} />
-              <p className="switch-auth">
+              <p className={styles.switchAuth}>
                 Đã có tài khoản?{' '}
-                <button onClick={() => setShowRegister(false)} className="switch-button">
+                <button onClick={() => setShowRegister(false)} className={styles.switchButton}>
                   Đăng nhập
                 </button>
               </p>
@@ -30,9 +30,9 @@ function App() {
           ) : (
             <>
               <LoginForm onLogin={login} error={error} isLoading={authLoading} />
-              <p className="switch-auth">
+              <p className={styles.switchAuth}>
                 Chưa có tài khoản?{' '}
-                <button onClick={() => setShowRegister(true)} className="switch-button">
+                <button onClick={() => setShowRegister(true)} className={styles.switchButton}>
                   Đăng ký
                 </button>
               </p>
@@ -47,7 +47,7 @@ function App() {
           onAddBee={addBee}
           getRemainingTime={getRemainingTime}
           onLogout={logout}
-          isLoading={authLoading || beesLoading} // Kết hợp cả hai loading state
+          isLoading={authLoading || beesLoading}
         />
       )}
     </div>

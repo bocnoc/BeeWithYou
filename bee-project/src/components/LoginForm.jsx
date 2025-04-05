@@ -1,7 +1,7 @@
 // src/components/LoginForm.jsx
 import { useState } from 'react';
 import Spinner from './Spinner';
-import '../styles/LoginForm.css';
+import styles from '../styles/LoginForm.module.css';
 
 const LoginForm = ({ onLogin, error, isLoading }) => {
   const [email, setEmail] = useState('');
@@ -13,11 +13,11 @@ const LoginForm = ({ onLogin, error, isLoading }) => {
   };
 
   return (
-    <div className="login-form-container">
+    <div className={styles.loginFormContainer}>
       {isLoading ? (
         <Spinner />
       ) : (
-        <form onSubmit={handleSubmit} className="login-form">
+        <form onSubmit={handleSubmit} className={styles.loginForm}>
           <h2>Đăng nhập</h2>
           <input
             type="email"
@@ -36,7 +36,7 @@ const LoginForm = ({ onLogin, error, isLoading }) => {
           <button type="submit" disabled={isLoading}>
             Đăng nhập
           </button>
-          {error && <p className="error">{error}</p>}
+          {error && <p className={styles.error}>{error}</p>}
         </form>
       )}
     </div>

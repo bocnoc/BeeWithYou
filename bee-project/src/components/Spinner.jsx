@@ -1,8 +1,8 @@
 // src/components/Spinner.jsx
-import '../styles/Spinner.css';
+import styles from '../styles/Spinner.module.css';
 
 const Spinner = () => {
-  return <div className="spinner">Đang tải...</div>;
+  return <div className={styles.spinner}>Đang tải...</div>;
 };
 
 export default Spinner;

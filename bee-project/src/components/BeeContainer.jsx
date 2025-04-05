@@ -1,31 +1,31 @@
 // src/components/BeeContainer.jsx
 import Bee from './Bee';
 import Spinner from './Spinner';
-import '../styles/BeeContainer.css';
+import styles from '../styles/BeeContainer.module.css';
 
 const BeeContainer = ({ bees, beeCount, clickMessage, onAddBee, getRemainingTime, onLogout, isLoading }) => {
   return (
-    <div className="bee-container">
+    <div className={styles.beeContainer}>
       <h2>Chào mừng đến tổ ong!</h2>
-      <button onClick={onLogout} className="logout-button" disabled={isLoading}>
+      <button onClick={onLogout} className={styles.logoutButton} disabled={isLoading}>
         Đăng xuất
       </button>
       {isLoading ? (
         <Spinner />
       ) : (
         <>
-          <div className="hive">
-            <img src="/hive.png" alt="Tổ ong" className="hive-img" />
+          <div className={styles.hive}>
+            <img src="/hive.png" alt="Tổ ong" className={styles.hiveImg} />
             {bees.map((bee, index) => (
               <Bee key={bee.id} index={index} />
             ))}
           </div>
-          <button onClick={onAddBee} className="bee-button" disabled={isLoading}>
+          <button onClick={onAddBee} className={styles.beeButton} disabled={isLoading}>
             Thêm ong (1 lần/ngày)
           </button>
-          {clickMessage && <p className="click-message">{clickMessage}</p>}
+          {clickMessage && <p className={styles.clickMessage}>{clickMessage}</p>}
           {getRemainingTime() && (
-            <p className="remaining-time">
+            <p className={styles.remainingTime}>
               Thời gian còn lại để thêm ong: {getRemainingTime()}
             </p>
           )}

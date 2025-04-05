@@ -1,7 +1,7 @@
 // src/components/RegisterForm.jsx
 import { useState } from 'react';
 import Spinner from './Spinner';
-import '../styles/RegisterForm.css';
+import styles from '../styles/RegisterForm.module.css';
 
 const RegisterForm = ({ onRegister, error, isLoading }) => {
   const [email, setEmail] = useState('');
@@ -13,11 +13,11 @@ const RegisterForm = ({ onRegister, error, isLoading }) => {
   };
 
   return (
-    <div className="register-form-container">
+    <div className={styles.registerFormContainer}>
       {isLoading ? (
         <Spinner />
       ) : (
-        <form onSubmit={handleSubmit} className="register-form">
+        <form onSubmit={handleSubmit} className={styles.registerForm}>
           <h2>Đăng ký</h2>
           <input
             type="email"
@@ -36,7 +36,7 @@ const RegisterForm = ({ onRegister, error, isLoading }) => {
           <button type="submit" disabled={isLoading}>
             Đăng ký
           </button>
-          {error && <p className="error">{error}</p>}
+          {error && <p className={styles.error}>{error}</p>}
         </form>
       )}
     </div>

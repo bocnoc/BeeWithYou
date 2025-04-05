@@ -1,0 +1,45 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #fffde7;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.authContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.switchAuth {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.switchButton {
+  background: none;
+  border: none;
+  color: #2196f3;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+.switchButton:hover {
+  color: #1e88e5;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+  margin: 10px 0;
+}
