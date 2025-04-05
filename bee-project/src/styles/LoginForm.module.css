@@ -1,3 +1,4 @@
+/* src/styles/LoginForm.module.css */
 .loginFormContainer {
   display: flex;
   flex-direction: column;
@@ -11,16 +12,17 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  background-color: #f0f0f0;
+  background-color: rgba(255, 255, 255, 0.9); /* Nền trắng với độ trong suốt nhẹ */
   padding: 20px;
   border-radius: 8px;
   width: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Thêm bóng để nổi bật trên nền gradient */
 }
 
 .loginForm h2 {
   margin: 0 0 20px;
   font-size: 24px;
-  color: #333;
+  color: #1a3c34; /* Màu xanh đậm để đồng bộ với gradient */
 }
 
 .loginForm input {
@@ -29,6 +31,8 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 16px;
+  background-color: #ffffff; /* Đảm bảo input có nền trắng */
+  color: #333; /* Màu chữ tối để dễ đọc */
 }
 
 .loginForm button {
@@ -51,7 +55,7 @@
 }
 
 .loginForm .error {
-  color: red;
+  color: #ff4d4d; /* Màu đỏ nhạt để nổi bật */
   font-size: 14px;
   margin-top: 10px;
 }

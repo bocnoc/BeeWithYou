@@ -1,3 +1,4 @@
+/* src/styles/App.module.css */
 .app {
   display: flex;
   flex-direction: column;
@@ -5,7 +6,7 @@
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  background-color: #fffde7;
+  background: linear-gradient(135deg, #000000 0%, #1a3c34 100%); /* Gradient từ đen đến xanh đậm */
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -22,24 +23,24 @@
 .switchAuth {
   margin-top: 10px;
   font-size: 14px;
-  color: #333;
+  color: #ffffff; /* Đổi màu chữ thành trắng để nổi bật trên nền gradient tối */
 }
 
 .switchButton {
   background: none;
   border: none;
-  color: #2196f3;
+  color: #4da8da; /* Màu xanh sáng hơn để nổi bật */
   cursor: pointer;
   font-size: 14px;
   text-decoration: underline;
 }
 
 .switchButton:hover {
-  color: #1e88e5;
+  color: #66b3ff; /* Màu xanh sáng hơn khi hover */
 }
 
 .error {
-  color: red;
+  color: #ff4d4d; /* Màu đỏ nhạt để nổi bật trên nền tối */
   font-size: 14px;
   margin: 10px 0;
 }
