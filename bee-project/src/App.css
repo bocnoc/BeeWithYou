@@ -45,6 +45,12 @@ html, body {
   cursor: pointer;
 }
 
+.error {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
 .bee-container {
   display: flex;
   flex-direction: column;
@@ -64,6 +70,12 @@ html, body {
   font-size: 18px;
   font-weight: bold;
   color: #ff4500;
+}
+
+.click-message {
+  color: red;
+  font-size: 16px;
+  margin: 10px 0;
 }
 
 .hive {
@@ -86,7 +98,7 @@ html, body {
   height: 30px;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(0deg); /* Đảm bảo đầu ong hướng lên trên */
+  transform: translate(-50%, -50%); /* Đặt vị trí ban đầu ở giữa tổ ong */
   transform-origin: center center; /* Điểm xoay ở giữa */
 }
 
@@ -124,5 +136,9 @@ html, body {
 
   .bee-container p {
     font-size: 16px;
+  }
+
+  .click-message {
+    font-size: 14px;
   }
 }

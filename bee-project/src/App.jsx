@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
+import { auth, db } from './firebase/firebase'; // Import Firebase
+import { signInWithEmailAndPassword } from 'firebase/auth'; // Firebase Auth
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'; // Firestore
 import './App.css';
 
 // Đăng ký MotionPathPlugin
@@ -8,30 +11,97 @@ gsap.registerPlugin(MotionPathPlugin);
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [bees, setBees] = useState([]); // State lưu danh sách các con ong
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [bees, setBees] = useState([]); // Danh sách ong để hiển thị
+  const [beeCount, setBeeCount] = useState(0); // Số ong từ Firestore
+  const [lastClickTime, setLastClickTime] = useState(null); // Thời gian click cuối cùng
+  const [clickMessage, setClickMessage] = useState(''); // Thông báo giới hạn click
   const beeRefs = useRef([]); // Ref để lưu các DOM element của ong
 
-  const handleLogin = (e) => {
+  // Kiểm tra trạng thái đăng nhập khi app khởi động
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+        // Lấy dữ liệu người dùng từ Firestore
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setBeeCount(data.beeCount || 0);
+          setLastClickTime(data.lastClickTime ? data.lastClickTime.toDate() : null);
+          // Khôi phục danh sách ong để hiển thị
+          setBees(Array.from({ length: data.beeCount || 0 }, (_, i) => ({ id: i })));
+        } else {
+          // Nếu người dùng chưa có dữ liệu, tạo mới
+          await setDoc(userDocRef, { beeCount: 0, lastClickTime: null });
+        }
+      } else {
+        setIsLoggedIn(false);
+        setBeeCount(0);
+        setBees([]);
+        setLastClickTime(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Xử lý đăng nhập
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Giả lập đăng nhập (sẽ kết nối backend sau)
-    setIsLoggedIn(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setError('');
+    } catch (err) {
+      setError('Đăng nhập thất bại. Vui lòng kiểm tra email/mật khẩu.');
+      console.error(err);
+    }
   };
 
-  const handleBeeClick = () => {
-    // Thêm một con ong mới
-    const newBee = {
-      id: bees.length, // ID để làm key
-    };
-    setBees([...bees, newBee]); // Thêm con ong mới vào danh sách
+  // Kiểm tra xem có thể click "Thêm ong" không
+  const canAddBee = () => {
+    if (!lastClickTime) return true; // Nếu chưa click lần nào, cho phép
+    const now = new Date();
+    const timeDiff = now - lastClickTime; // Thời gian chênh lệch (ms)
+    const hoursDiff = timeDiff / (1000 * 60 * 60); // Chuyển sang giờ
+    return hoursDiff >= 24; // Cho phép nếu đã qua 24 giờ
+  };
+
+  // Xử lý khi nhấn nút "Thêm ong"
+  const handleBeeClick = async () => {
+    if (!canAddBee()) {
+      setClickMessage('Bạn chỉ có thể thêm ong 1 lần/ngày. Vui lòng thử lại sau!');
+      return;
+    }
+
+    // Thêm ong mới
+    const newBee = { id: bees.length };
+    setBees([...bees, newBee]);
+    const newBeeCount = beeCount + 1;
+    setBeeCount(newBeeCount);
+
+    // Cập nhật Firestore
+    const user = auth.currentUser;
+    if (user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, {
+        beeCount: newBeeCount,
+        lastClickTime: new Date(),
+      });
+      setLastClickTime(new Date());
+      setClickMessage('');
+    }
   };
 
   // Hàm tạo đường path ngẫu nhiên
   const generateRandomPath = () => {
     return [
-      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 }, // Điểm 1
-      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 }, // Điểm 2
-      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 }, // Điểm 3
-      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 }, // Điểm 4
+      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
+      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
+      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
+      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
     ];
   };
 
@@ -39,40 +109,26 @@ function App() {
   useEffect(() => {
     bees.forEach((bee, index) => {
       const beeElement = beeRefs.current[index];
-      if (beeElement && !beeElement.dataset.animated) { // Kiểm tra để không chạy lại animation cho ong cũ
-        // Đánh dấu con ong đã được animated
+      if (beeElement && !beeElement.dataset.animated) {
         beeElement.dataset.animated = true;
 
-        // Tạo đường path ban đầu
         let currentPath = generateRandomPath();
-
-        // Dùng GSAP để tạo timeline cho animation
         const tl = gsap.timeline({
-          repeat: -1, // Lặp vô hạn
-          delay: Math.random() * 5, // Độ trễ (0-5 giây)
+          repeat: -1,
+          delay: Math.random() * 5,
           onRepeat: () => {
-            // Tạo đường path mới mỗi lần lặp
             currentPath = generateRandomPath();
-            // Cập nhật quỹ đạo mới
-            tl.clear(); // Xóa các animation cũ trong timeline
-            let currentPos = gsap.getProperty(beeElement, 'x'); // Lấy vị trí hiện tại
+            tl.clear();
+            let currentPos = gsap.getProperty(beeElement, 'x');
             let currentPosY = gsap.getProperty(beeElement, 'y');
-
-            // Tạo quỹ đạo mới từ vị trí hiện tại
             for (let i = 0; i < currentPath.length; i++) {
               const startPoint = i === 0 ? { x: currentPos, y: currentPosY } : currentPath[i - 1];
               const endPoint = currentPath[i];
-
-              // Tính hướng di chuyển (trái hoặc phải)
-              const direction = endPoint.x > startPoint.x ? 1 : -1; // 1: sang phải, -1: sang trái
-
-              // Xoay con ong theo hướng di chuyển
+              const direction = endPoint.x > startPoint.x ? 1 : -1;
               tl.to(beeElement, {
-                rotationY: direction === 1 ? 180 : 0, // Sang phải: xoay 180 độ, sang trái: giữ nguyên
-                duration: 0, // Xoay ngay lập tức
+                rotationY: direction === 1 ? 180 : 0,
+                duration: 0,
               }, i * segmentDuration);
-
-              // Di chuyển con ong đến điểm tiếp theo theo quỹ đạo cong
               tl.to(beeElement, {
                 x: endPoint.x,
                 y: endPoint.y,
@@ -80,32 +136,24 @@ function App() {
                 ease: 'sine.inOut',
                 motionPath: {
                   path: [startPoint, endPoint],
-                  curviness: 2, // Độ cong của quỹ đạo
+                  curviness: 2,
                 },
               }, i * segmentDuration);
             }
           },
         });
 
-        // Tính thời gian cho mỗi đoạn của quỹ đạo
-        const totalDuration = Math.random() * 5 + 5; // Thời gian animation (5-10 giây, nhanh gấp đôi)
-        const segmentDuration = totalDuration / currentPath.length; // Thời gian cho mỗi đoạn
+        const totalDuration = Math.random() * 5 + 5;
+        const segmentDuration = totalDuration / currentPath.length;
 
-        // Tạo quỹ đạo ban đầu
         for (let i = 0; i < currentPath.length; i++) {
           const startPoint = i === 0 ? { x: 0, y: 0 } : currentPath[i - 1];
           const endPoint = currentPath[i];
-
-          // Tính hướng di chuyển (trái hoặc phải)
-          const direction = endPoint.x > startPoint.x ? 1 : -1; // 1: sang phải, -1: sang trái
-
-          // Xoay con ong theo hướng di chuyển
+          const direction = endPoint.x > startPoint.x ? 1 : -1;
           tl.to(beeElement, {
-            rotationY: direction === 1 ? 180 : 0, // Sang phải: xoay 180 độ, sang trái: giữ nguyên
-            duration: 0, // Xoay ngay lập tức
+            rotationY: direction === 1 ? 180 : 0,
+            duration: 0,
           }, i * segmentDuration);
-
-          // Di chuyển con ong đến điểm tiếp theo theo quỹ đạo cong
           tl.to(beeElement, {
             x: endPoint.x,
             y: endPoint.y,
@@ -113,39 +161,47 @@ function App() {
             ease: 'sine.inOut',
             motionPath: {
               path: [startPoint, endPoint],
-              curviness: 2, // Độ cong của quỹ đạo
+              curviness: 2,
             },
           }, i * segmentDuration);
         }
 
-        // Đảm bảo đầu ong luôn hướng lên trên (trục Z)
-        gsap.set(beeElement, {
-          rotation: 0, // Giữ góc xoay trục Z là 0 (đầu hướng lên trên)
-        });
+        gsap.set(beeElement, { rotation: 0 });
       }
     });
-  }, [bees]); // Chạy lại mỗi khi danh sách ong thay đổi
+  }, [bees]);
 
   return (
     <div className="app">
       {!isLoggedIn ? (
         <form onSubmit={handleLogin} className="login-form">
           <h2>Đăng nhập</h2>
-          <input type="text" placeholder="Tên người dùng" required />
-          <input type="password" placeholder="Mật khẩu" required />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Mật khẩu"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
           <button type="submit">Đăng nhập</button>
+          {error && <p className="error">{error}</p>}
         </form>
       ) : (
         <div className="bee-container">
           <h2>Chào mừng đến tổ ong!</h2>
           <div className="hive">
-            {/* Tổ ong */}
             <img src="/hive.png" alt="Tổ ong" className="hive-img" />
-            {/* Ong bay */}
             {bees.map((bee, index) => (
               <img
                 key={bee.id}
-                ref={(el) => (beeRefs.current[index] = el)} // Lưu ref của từng con ong
+                ref={(el) => (beeRefs.current[index] = el)}
                 src="/bee.png"
                 alt="Ong"
                 className="bee"
@@ -155,7 +211,8 @@ function App() {
           <button onClick={handleBeeClick} className="bee-button">
             Thêm ong (1 lần/ngày)
           </button>
-          <p>Số ong: {bees.length}</p>
+          {clickMessage && <p className="click-message">{clickMessage}</p>}
+          <p>Số ong: {beeCount}</p>
         </div>
       )}
     </div>
