@@ -1,74 +1,43 @@
 // src/utils/animation.js
 import { gsap } from 'gsap';
-import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
-
-gsap.registerPlugin(MotionPathPlugin);
 
 export const animateBee = (beeElement, index) => {
-  if (beeElement && !beeElement.dataset.animated) {
-    beeElement.dataset.animated = true;
+  const hiveWidth = 400; // Kích thước tổ ong (px)
+  const hiveHeight = 400;
+  const beeSize = 40; // Kích thước ong (px)
 
-    const generateRandomPath = () => [
-      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
-      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
-      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
-      { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
-    ];
+  // Hàm tạo vị trí ngẫu nhiên trong khu vực tổ ong
+  const getRandomPosition = () => {
+    // Tính toán để ong không bay ra ngoài khu vực tổ ong
+    const maxX = hiveWidth - beeSize;
+    const maxY = hiveHeight - beeSize;
+    const x = Math.random() * maxX; // Vị trí x ngẫu nhiên
+    const y = Math.random() * maxY; // Vị trí y ngẫu nhiên
+    return { x, y };
+  };
 
-    let currentPath = generateRandomPath();
-    const tl = gsap.timeline({
-      repeat: -1,
-      delay: Math.random() * 5,
-      onRepeat: () => {
-        currentPath = generateRandomPath();
-        tl.clear();
-        let currentPos = gsap.getProperty(beeElement, 'x');
-        let currentPosY = gsap.getProperty(beeElement, 'y');
-        for (let i = 0; i < currentPath.length; i++) {
-          const startPoint = i === 0 ? { x: currentPos, y: currentPosY } : currentPath[i - 1];
-          const endPoint = currentPath[i];
-          const direction = endPoint.x > startPoint.x ? 1 : -1;
-          tl.to(beeElement, {
-            rotationY: direction === 1 ? 180 : 0,
-            duration: 0,
-          }, i * segmentDuration);
-          tl.to(beeElement, {
-            x: endPoint.x,
-            y: endPoint.y,
-            duration: segmentDuration,
-            ease: 'sine.inOut',
-            motionPath: {
-              path: [startPoint, endPoint],
-              curviness: 2,
-            },
-          }, i * segmentDuration);
-        }
-      },
+  // Hàm di chuyển ong đến vị trí ngẫu nhiên
+  const moveBee = () => {
+    const { x, y } = getRandomPosition();
+    const duration = 2 + Math.random() * 3; // Thời gian di chuyển: 2-5 giây
+    const delay = Math.random() * 1; // Độ trễ ngẫu nhiên: 0-1 giây
+
+    gsap.to(beeElement, {
+      x: x - hiveWidth / 2, // Điều chỉnh để vị trí tương đối với trung tâm tổ ong
+      y: y - hiveHeight / 2,
+      duration: duration,
+      ease: 'power1.inOut', // Chuyển động mượt mà, tự nhiên
+      delay: delay,
+      onComplete: moveBee, // Gọi lại hàm để di chuyển đến vị trí mới
     });
+  };
 
-    const totalDuration = Math.random() * 5 + 5;
-    const segmentDuration = totalDuration / currentPath.length;
+  // Đặt vị trí ban đầu của ong ở trung tâm tổ ong
+  gsap.set(beeElement, {
+    x: 0,
+    y: 0,
+  });
 
-    for (let i = 0; i < currentPath.length; i++) {
-      const startPoint = i === 0 ? { x: 0, y: 0 } : currentPath[i - 1];
-      const endPoint = currentPath[i];
-      const direction = endPoint.x > startPoint.x ? 1 : -1;
-      tl.to(beeElement, {
-        rotationY: direction === 1 ? 180 : 0,
-        duration: 0,
-      }, i * segmentDuration);
-      tl.to(beeElement, {
-        x: endPoint.x,
-        y: endPoint.y,
-        duration: segmentDuration,
-        ease: 'sine.inOut',
-        motionPath: {
-          path: [startPoint, endPoint],
-          curviness: 2,
-        },
-      }, i * segmentDuration);
-    }
-
-    gsap.set(beeElement, { rotation: 0 });
-  }
+  // Bắt đầu di chuyển
+  moveBee();
 };
